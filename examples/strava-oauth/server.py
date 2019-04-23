@@ -3,6 +3,7 @@ import logging
 
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from stravalib import Client
+import json
 
 app = Flask(__name__)
 app.config.from_envvar('APP_SETTINGS')
@@ -37,8 +38,20 @@ def logged_in():
         # Probably here you'd want to store this somewhere -- e.g. in a database.
         strava_athlete = client.get_athlete()
 
+        store_athlete(access_token, strava_athlete)
+
         return render_template('login_results.html', athlete=strava_athlete, access_token=access_token)
 
+def store_athlete(access_token, strava_athlete):
+    athlete = {}
+    athlete['firstname'] = strava_athlete.firstname
+    athlete['lastname'] = strava_athlete.lastname
+    athlete['id'] = strava_athlete.id
+    athlete.update(access_token)
+
+    with open(str(athlete['id']) + ".json", "w") as f: 
+        json.dump(athlete, f)
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
